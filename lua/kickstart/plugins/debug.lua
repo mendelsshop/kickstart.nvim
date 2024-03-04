@@ -82,6 +82,7 @@ return {
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
     -- Install golang specific config
-    require('dap-go').setup()
+      require(' nvim-java/nvim-java').setup()
+      require('dap-go').setup()
   end,
 }
