@@ -421,7 +421,7 @@ require('lazy').setup {
   {
     -- TODO: switch back to nvim-java/nvim-java (main) if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
     'nvim-java/nvim-java',
-    -- branch = 'feature-api-to-run-application',
+    branch = 'feature-api-to-run-application',
     dependencies = {
       'nvim-java/lua-async-await',
       'nvim-java/nvim-java-core',
