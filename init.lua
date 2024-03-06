@@ -187,10 +187,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -394,6 +394,9 @@ require('lazy').setup {
       vim.keymap.set('n', '<leader>s.', builtin.find_files, { desc = '[S]earch Files' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
+      -- telscope + todo
+
+      vim.keymap.set('n', '<leader>st', ':TodoTelescope<CR>', { desc = '[S]earch [T]odos' })
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to telescope to change theme, layout, etc.
@@ -418,18 +421,10 @@ require('lazy').setup {
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
-  {
-    -- TODO: switch back to nvim-java/nvim-java (main) if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
-    'nvim-java/nvim-java',
-    branch = 'feature-api-to-run-application',
+  { -- LSP Configuration & Plugins
+    'neovim/nvim-lspconfig',
     dependencies = {
-      'nvim-java/lua-async-await',
-      'nvim-java/nvim-java-core',
-      'nvim-java/nvim-java-test',
-      'nvim-java/nvim-java-dap',
-      'MunifTanjim/nui.nvim',
-      'neovim/nvim-lspconfig',
-      'mfussenegger/nvim-dap',
+      -- Automatically install LSPs and related tools to stdpath for neovim
       {
         'williamboman/mason.nvim',
         opts = {
@@ -439,24 +434,34 @@ require('lazy').setup {
           },
         },
       },
+      'mfussenegger/nvim-jdtls',
+      {
+        -- TODO: switch back to nvim-java/nvim-java (main) if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
+        'nvim-java/nvim-java',
+        branch = 'feature-api-to-run-application',
+        dependencies = {
+          'nvim-java/lua-async-await',
+          'nvim-java/nvim-java-core',
+          'nvim-java/nvim-java-test',
+          'nvim-java/nvim-java-dap',
+          'MunifTanjim/nui.nvim',
+          'neovim/nvim-lspconfig',
+          'mfussenegger/nvim-dap',
+        },
+      },
+      'folke/neodev.nvim',
       {
         'williamboman/mason-lspconfig.nvim',
         opts = {
           handlers = {
             ['jdtls'] = function()
+              -- to get more code action working properly (nvim-jdtls)
+              require 'jdtls'
               require('java').setup()
             end,
           },
         },
       },
-    },
-  },
-  { -- LSP Configuration & Plugins
-    'neovim/nvim-lspconfig',
-    dependencies = {
-      -- Automatically install LSPs and related tools to stdpath for neovim
-      'williamboman/mason.nvim',
-      'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
@@ -615,7 +620,7 @@ require('lazy').setup {
         -- But for many setups, the LSP (`tsserver`) will work just fine
         tsserver = {},
         --
-
+        jdtls = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes { ...},
@@ -657,6 +662,9 @@ require('lazy').setup {
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
+
+        -- TODO: remove this from ensure installed if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
+        'lombok-nightly', -- needs to be installed for nvim-java (non main branch) 
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
       require('mason-lspconfig').setup {
@@ -671,7 +679,7 @@ require('lazy').setup {
           end,
         },
       }
-      require('lspconfig').jdtls.setup {}
+      require('neodev').setup {}
       require('lspconfig').racket_langserver.setup {}
       -- we use non mason version of ocamllsp to have more up to date version
       -- and use system version of ocamllsp
@@ -712,15 +720,15 @@ require('lazy').setup {
       -- Snippet Engine & its associated nvim-cmp source
       {
         'L3MON4D3/LuaSnip',
-        build = (function()
-          -- Build Step is needed for regex support in snippets
-          -- This step is not supported in many windows environments
-          -- Remove the below condition to re-enable on windows
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
-          return 'make install_jsregexp'
-        end)(),
+        -- build = (function()
+        --   -- Build Step is needed for regex support in snippets
+        --   -- This step is not supported in many windows environments
+        --   -- Remove the below condition to re-enable on windows
+        --   if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
+        --     return
+        --   end
+        --   return 'make install_jsregexp'
+        -- end)(),
       },
       'saadparwaiz1/cmp_luasnip',
 
@@ -734,12 +742,13 @@ require('lazy').setup {
       --    you can use this plugin to help you. It even has snippets
       --    for various frameworks/libraries/etc. but you will have to
       --    set up the ones that are useful for you.
-      -- 'rafamadriz/friendly-snippets',
+      'rafamadriz/friendly-snippets',
     },
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
+      require('luasnip.loaders.from_vscode').lazy_load()
       luasnip.config.setup {}
 
       cmp.setup {
@@ -820,6 +829,9 @@ require('lazy').setup {
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter-textobjects',
+    },
     config = function()
       -- Better Around/Inside textobjects
       --
@@ -827,8 +839,16 @@ require('lazy').setup {
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [']quote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
-
+      local ai = require 'mini.ai'
+      local spec_treesitter = ai.gen_spec.treesitter
+      ai.setup {
+        n_lines = 100000,
+        custom_textobjects = {
+          -- This will override default "function call" textobject
+          f = spec_treesitter { a = '@function.outer', i = '@function.inner' },
+          c = spec_treesitter { a = '@class.outer', i = '@class.inner' },
+        },
+      }
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
@@ -877,50 +897,50 @@ require('lazy').setup {
             node_decremental = '<M-space>',
           },
         },
-        textobjects = {
-          select = {
-            enable = true,
-            lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-            keymaps = {
-              -- You can use the capture groups defined in textobjects.scm
-              ['aa'] = '@parameter.outer',
-              ['ia'] = '@parameter.inner',
-              ['af'] = '@function.outer',
-              ['if'] = '@function.inner',
-              ['ac'] = '@class.outer',
-              ['ic'] = '@class.inner',
-            },
-          },
-          move = {
-            enable = true,
-            set_jumps = true, -- whether to set jumps in the jumplist
-            goto_next_start = {
-              [']m'] = '@function.outer',
-              [']]'] = '@class.outer',
-            },
-            goto_next_end = {
-              [']M'] = '@function.outer',
-              [']['] = '@class.outer',
-            },
-            goto_previous_start = {
-              ['[['] = '@class.outer',
-              ['[m'] = '@function.outer',
-            },
-            goto_previous_end = {
-              ['[M'] = '@function.outer',
-              ['[]'] = '@class.outer',
-            },
-          },
-          swap = {
-            enable = true,
-            swap_next = {
-              ['<leader>a'] = '@parameter.inner',
-            },
-            swap_previous = {
-              ['<leader>A'] = '@parameter.inner',
-            },
-          },
-        },
+        -- textobjects = {
+        --   select = {
+        --     enable = true,
+        --     lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+        --     keymaps = {
+        --       -- You can use the capture groups defined in textobjects.scm
+        --       ['aa'] = '@parameter.outer',
+        --       ['ia'] = '@parameter.inner',
+        --       ['aF'] = '@function.outer',
+        --       ['iF'] = '@function.inner',
+        --       ['ac'] = '@class.outer',
+        --       ['ic'] = '@class.inner',
+        --     },
+        --   },
+        --   move = {
+        --     enable = true,
+        --     set_jumps = true, -- whether to set jumps in the jumplist
+        --     goto_next_start = {
+        --       [']m'] = '@function.outer',
+        --       [']]'] = '@class.outer',
+        --     },
+        --     goto_next_end = {
+        --       [']M'] = '@function.outer',
+        --       [']['] = '@class.outer',
+        --     },
+        --     goto_previous_start = {
+        --       ['[['] = '@class.outer',
+        --       ['[m'] = '@function.outer',
+        --     },
+        --     goto_previous_end = {
+        --       ['[M'] = '@function.outer',
+        --       ['[]'] = '@class.outer',
+        --     },
+        --   },
+        --   swap = {
+        --     enable = true,
+        --     swap_next = {
+        --       ['<leader>a'] = '@parameter.inner',
+        --     },
+        --     swap_previous = {
+        --       ['<leader>A'] = '@parameter.inner',
+        --     },
+        --   },
+        -- },
       }
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -961,7 +981,7 @@ require('lazy').setup {
   --  Here are some example plugins that I've included in the kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  require 'kickstart.plugins.debug',
+  -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
