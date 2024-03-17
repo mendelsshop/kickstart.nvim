@@ -421,6 +421,13 @@ require('lazy').setup {
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+  {
+    'saecki/crates.nvim',
+    tag = 'stable',
+    config = function()
+      require('crates').setup()
+    end,
+  },
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
@@ -436,9 +443,7 @@ require('lazy').setup {
       },
       'mfussenegger/nvim-jdtls',
       {
-        -- TODO: switch back to nvim-java/nvim-java (main) if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
         'nvim-java/nvim-java',
-        branch = 'feature-api-to-run-application',
         dependencies = {
           'nvim-java/lua-async-await',
           'nvim-java/nvim-java-core',
@@ -463,7 +468,9 @@ require('lazy').setup {
         },
       },
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-
+      {
+        "gleam-lang/gleam.vim",
+      },
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
@@ -612,6 +619,7 @@ require('lazy').setup {
         -- gopls = {},
         -- pyright = {},
         rust_analyzer = {},
+        -- gleam = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -662,25 +670,25 @@ require('lazy').setup {
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
-
-        -- TODO: remove this from ensure installed if and when https://github.com/nvim-java/nvim-java/pull/122 gets merged
-        'lombok-nightly', -- needs to be installed for nvim-java (non main branch) 
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      function setup_sever(server_name)
+        local server = servers[server_name] or {}
+        -- This handles overriding only values explicitly passed
+        -- by the server configuration above. Useful when disabling
+        -- certain features of an LSP (for example, turning off formatting for tsserver)
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        require('lspconfig')[server_name].setup(server)
+      end
+
       require('mason-lspconfig').setup {
         handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for tsserver)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
+          setup_sever,
         },
       }
       require('neodev').setup {}
       require('lspconfig').racket_langserver.setup {}
+        require('lspconfig').gleam.setup { handlers = {setup_sever} }
       -- we use non mason version of ocamllsp to have more up to date version
       -- and use system version of ocamllsp
       require('lspconfig').ocamllsp.setup {
