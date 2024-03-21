@@ -687,15 +687,18 @@ require('lazy').setup {
         },
       }
       require('neodev').setup {}
-      require('lspconfig').racket_langserver.setup {}
-        require('lspconfig').gleam.setup { handlers = {setup_sever} }
+      require('lspconfig').racket_langserver.setup {
+        handlers = { setup_sever },
+      }
+      require('lspconfig').gleam.setup { handlers = { setup_sever } }
       -- we use non mason version of ocamllsp to have more up to date version
       -- and use system version of ocamllsp
       require('lspconfig').ocamllsp.setup {
         capabilities = capabilities,
-        -- on_attach = on_attach,
+        handlers = { setup_sever },
         settings = {
           codelens = { enable = true },
+          inlay_hints = { enable = true },
         },
       }
     end,
