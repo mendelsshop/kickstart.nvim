@@ -165,6 +165,14 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- tabs
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
+vim.opt.expandtab = true
+
+
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -173,9 +181,6 @@ vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
@@ -245,11 +250,6 @@ require('lazy').setup {
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
-  --  This is equivalent to:
-  --    require('Comment').setup({})
-
-  -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim',    opts = {} },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following lua:
@@ -422,6 +422,43 @@ require('lazy').setup {
     end,
   },
   {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>cl",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "<leader>xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
+    },
+  },
+  {
     'saecki/crates.nvim',
     tag = 'stable',
     config = function()
@@ -441,11 +478,19 @@ require('lazy').setup {
           },
         },
       },
+      { "jmederosalvarado/roslyn.nvim",
+        event = "BufReadPre"
+      },
+      "Hoffs/omnisharp-extended-lsp.nvim",
+      -- {
+      --   dir = "~/roslyn.nvim"
+      -- },
       'mfussenegger/nvim-jdtls',
       {
         'nvim-java/nvim-java',
         dependencies = {
           'nvim-java/lua-async-await',
+          'nvim-java/nvim-java-refactor',
           'nvim-java/nvim-java-core',
           'nvim-java/nvim-java-test',
           'nvim-java/nvim-java-dap',
@@ -454,6 +499,19 @@ require('lazy').setup {
           'mfussenegger/nvim-dap',
         },
       },
+
+      -- {
+      --   "iabdelkareem/csharp.nvim",
+      --   dependencies = {
+      --     "williamboman/mason.nvim", -- Required, automatically installs omnisharp
+      --     "mfussenegger/nvim-dap",
+      --     "Tastyep/structlog.nvim",  -- Optional, but highly recommended for debugging
+      --   },
+      --   config = function()
+      --     require("mason").setup() -- Mason setup must run before csharp
+      --     require("csharp").setup()
+      --   end
+      -- },
       'folke/neodev.nvim',
       {
         'williamboman/mason-lspconfig.nvim',
@@ -468,9 +526,9 @@ require('lazy').setup {
         },
       },
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-      {
-        "gleam-lang/gleam.vim",
-      },
+      -- {
+      --   "gleam-lang/gleam.vim",
+      -- },
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
@@ -554,7 +612,7 @@ require('lazy').setup {
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
-          map('K', vim.lsp.buf.hover, 'Hover Documentation')
+          -- map('K', vim.lsp.buf.hover, 'Hover Documentation')
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header
@@ -570,21 +628,21 @@ require('lazy').setup {
             vim.lsp.buf.format()
           end, { desc = 'Format current buffer with LSP' })
 
-          if client.server_capabilities.inlayHintProvider then
-            vim.lsp.inlay_hint.enable(bufnr, true)
+          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+            vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
           end
           -- code lens
-          if client.server_capabilities.code_lens then
-            local codelens = vim.api.nvim_create_augroup('LSPCodeLens', { clear = true })
-            vim.api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave', 'CursorHold' }, {
-              group = codelens,
-              callback = function()
-                vim.lsp.codelens.refresh()
-              end,
-              buffer = bufnr,
-            })
-          end
-          if client and client.server_capabilities.documentHighlightProvider then
+          -- if client and client.server_capabilities.code_lens then
+          --   local codelens = vim.api.nvim_create_augroup('LSPCodeLens', { clear = true })
+          --   vim.api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave', 'CursorHold' }, {
+          --     group = codelens,
+          --     callback = function()
+          --       vim.lsp.codelens.refresh()
+          --     end,
+          --     buffer = bufnr,
+          --   })
+          -- end
+          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               callback = vim.lsp.buf.document_highlight,
@@ -626,10 +684,11 @@ require('lazy').setup {
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        tsserver = {},
+        tsserver      = {},
         --
-        jdtls = {},
-        lua_ls = {
+        jdtls         = {},
+        -- csharp_ls     = {},
+        lua_ls        = {
           -- cmd = {...},
           -- filetypes { ...},
           -- capabilities = {},
@@ -687,6 +746,13 @@ require('lazy').setup {
         },
       }
       require('neodev').setup {}
+      require("roslyn").setup({
+        capabilities = capabilities,
+        on_attach = function()
+
+        end
+
+      })
       require('lspconfig').racket_langserver.setup {
         handlers = { setup_sever },
       }
@@ -712,11 +778,16 @@ require('lazy').setup {
       --   timeout_ms = 500,
       --   lsp_fallback = true,
       -- },
+      -- formatters = {
+      --   csharpier = {},
+      -- },
       formatters_by_ft = {
         lua = { 'stylua' },
+        cs = { 'csharpier' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
+
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
@@ -891,10 +962,26 @@ require('lazy').setup {
     build = ':TSUpdate',
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-
+      local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+      parser_config.shank = {
+        install_info = {
+          url = "https://github.com/mendelsshop/tree-sitter-shank.git", -- local path or git repo
+          files = { "src/parser.c", "src/scanner.c" },                  -- note that some parsers also require src/scanner.c or src/scanner.cc
+          -- optional entries:
+          branch = "main",                                              -- default branch in case of git repo if different from master
+          generate_requires_npm = false,                                -- if stand-alone parser without npm dependencies
+          requires_generate_from_grammar = false,                       -- if folder contains pre-generated src/parser.c
+        },
+        filetype = "shank",                                             -- if filetype does not match the parser name
+      }
+      vim.filetype.add({
+        extension = {
+          shank = "shank"
+        }
+      })
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'java', 'ocaml', 'scheme', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+        ensure_installed = { 'shank', 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'java', 'ocaml', 'scheme', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = { enable = true },
