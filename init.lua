@@ -289,14 +289,17 @@ require('lazy').setup {
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
       require('which-key').setup()
-
+      vim.keymap.set({ "n", "x" }, "s", "<Nop>")
       -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+      require('which-key').add {
+        -- { 's',         group = '[S]urround' },
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>t', group = '[T]oggle' },
+        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       }
     end,
   },
@@ -304,6 +307,19 @@ require('lazy').setup {
   {
     'christoomey/vim-tmux-navigator',
   },
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",  -- required
+      "sindrets/diffview.nvim", -- optional - Diff integration
+
+      -- Only one of these is needed, not both.
+      "nvim-telescope/telescope.nvim", -- optional
+      "ibhagwan/fzf-lua",              -- optional
+    },
+    config = true
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -463,6 +479,44 @@ require('lazy').setup {
     tag = 'stable',
     config = function()
       require('crates').setup()
+      local crates = require("crates")
+      local opts = { silent = true }
+
+      vim.keymap.set("n", "<leader>ct", crates.toggle, opts)
+      vim.keymap.set("n", "<leader>cr", crates.reload, opts)
+
+      vim.keymap.set("n", "<leader>cv", crates.show_versions_popup, opts)
+      vim.keymap.set("n", "<leader>cf", crates.show_features_popup, opts)
+      vim.keymap.set("n", "<leader>cd", crates.show_dependencies_popup, opts)
+
+      vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
+      vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
+      vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
+      vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
+      vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
+      vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
+
+      vim.keymap.set("n", "<leader>cx", crates.expand_plain_crate_to_inline_table, opts)
+      vim.keymap.set("n", "<leader>cX", crates.extract_crate_into_table, opts)
+
+      vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
+      vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
+      vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
+      vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
+      local function show_documentation()
+        local filetype = vim.bo.filetype
+        if vim.tbl_contains({ 'vim', 'help' }, filetype) then
+          vim.cmd('h ' .. vim.fn.expand('<cword>'))
+        elseif vim.tbl_contains({ 'man' }, filetype) then
+          vim.cmd('Man ' .. vim.fn.expand('<cword>'))
+        elseif vim.fn.expand('%:t') == 'Cargo.toml' and require('crates').popup_available() then
+          require('crates').show_popup()
+        else
+          vim.lsp.buf.hover()
+        end
+      end
+
+      vim.keymap.set('n', 'K', show_documentation, { silent = true })
     end,
   },
   { -- LSP Configuration & Plugins
@@ -474,17 +528,20 @@ require('lazy').setup {
         opts = {
           registries = {
             'github:nvim-java/mason-registry',
+            'github:syndim/mason-registry',
             'github:mason-org/mason-registry',
           },
         },
       },
-      { "jmederosalvarado/roslyn.nvim",
-        event = "BufReadPre"
+      { "seblj/roslyn.nvim",
+        exe = vim.fs.joinpath(
+          vim.fn.stdpath("data") --[[@as string]],
+          "roslyn",
+          "Microsoft.CodeAnalysis.LanguageServer.dll"
+        ),
+        filewatching = true,
       },
       "Hoffs/omnisharp-extended-lsp.nvim",
-      -- {
-      --   dir = "~/roslyn.nvim"
-      -- },
       'mfussenegger/nvim-jdtls',
       {
         'nvim-java/nvim-java',
@@ -608,7 +665,9 @@ require('lazy').setup {
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          -- map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+          vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action,
+            { buffer = event.buf, desc = 'LSP: ' .. '[C]ode [A]ction' })
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap
@@ -655,7 +714,16 @@ require('lazy').setup {
           end
         end,
       })
+      -- hack so that rust_analyzer does not glitch out sometimes with files contains newer edits
+      vim.lsp.util.apply_text_document_edit = function(text_document_edit, index, offset_encoding)
+        local text_document = text_document_edit.textDocument
+        local bufnr = vim.uri_to_bufnr(text_document.uri)
+        if offset_encoding == nil then
+          vim.notify_once('apply_text_document_edit must be called with valid offset encoding', vim.log.levels.WARN)
+        end
 
+        vim.lsp.util.apply_text_edits(text_document_edit.edits, bufnr, offset_encoding)
+      end
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP Specification.
       --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
@@ -673,10 +741,11 @@ require('lazy').setup {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd        = {},
         -- gopls = {},
         -- pyright = {},
         rust_analyzer = {},
+        roslyn = {},
         -- gleam = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -747,10 +816,48 @@ require('lazy').setup {
       }
       require('neodev').setup {}
       require("roslyn").setup({
-        capabilities = capabilities,
-        on_attach = function()
-
-        end
+        handlers = {
+          setup_sever,
+        },
+        capabilities = vim.tbl_deep_extend("force", capabilities or {}, {
+          textDocument = {
+            diagnostic = {
+              dynamicRegistration = true,
+            },
+          },
+        }),
+        on_attach = function() end,
+        settings = {
+          ["csharp|completion"] = {
+            ["dotnet_provide_regex_completions"] = true,
+            ["dotnet_show_completion_items_from_unimported_namespaces"] = true,
+            ["dotnet_show_name_completion_suggestions"] = true,
+          },
+          ["csharp|highlighting"] = {
+            ["dotnet_highlight_related_json_components"] = true,
+            ["dotnet_highlight_related_regex_components"] = true,
+          },
+          ["csharp|code_lens"] = {
+            ["dotnet_enable_references_code_lens"] = true,
+          },
+          ["csharp|inlay_hints"] = {
+            ["csharp_enable_inlay_hints_for_implicit_object_creation"] = true,
+            ["csharp_enable_inlay_hints_for_implicit_variable_types"] = true,
+            ["csharp_enable_inlay_hints_for_lambda_parameter_types"] = true,
+            ["csharp_enable_inlay_hints_for_types"] = true,
+            ["dotnet_enable_inlay_hints_for_indexer_parameters"] = true,
+            ["dotnet_enable_inlay_hints_for_literal_parameters"] = true,
+            ["dotnet_enable_inlay_hints_for_object_creation_parameters"] = true,
+            ["dotnet_enable_inlay_hints_for_other_parameters"] = true,
+            ["dotnet_enable_inlay_hints_for_parameters"] = true,
+            ["dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix"] = true,
+            ["dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name"] = true,
+            ["dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent"] = true,
+          },
+          ["navigation"] = {
+            ["dotnet_navigate_to_decompiled_sources"] = true,
+          },
+        },
 
       })
       require('lspconfig').racket_langserver.setup {
