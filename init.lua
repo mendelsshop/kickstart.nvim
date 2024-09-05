@@ -542,21 +542,7 @@ require('lazy').setup {
         filewatching = true,
       },
       "Hoffs/omnisharp-extended-lsp.nvim",
-      'mfussenegger/nvim-jdtls',
-      {
-        'nvim-java/nvim-java',
-        dependencies = {
-          'nvim-java/lua-async-await',
-          'nvim-java/nvim-java-refactor',
-          'nvim-java/nvim-java-core',
-          'nvim-java/nvim-java-test',
-          'nvim-java/nvim-java-dap',
-          'MunifTanjim/nui.nvim',
-          'neovim/nvim-lspconfig',
-          'mfussenegger/nvim-dap',
-        },
-      },
-
+      'nvim-java/nvim-java',
       -- {
       --   "iabdelkareem/csharp.nvim",
       --   dependencies = {
@@ -570,18 +556,7 @@ require('lazy').setup {
       --   end
       -- },
       'folke/neodev.nvim',
-      {
-        'williamboman/mason-lspconfig.nvim',
-        opts = {
-          handlers = {
-            ['jdtls'] = function()
-              -- to get more code action working properly (nvim-jdtls)
-              require 'jdtls'
-              require('java').setup()
-            end,
-          },
-        },
-      },
+      'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       -- {
       --   "gleam-lang/gleam.vim",
@@ -745,7 +720,7 @@ require('lazy').setup {
         -- gopls = {},
         -- pyright = {},
         rust_analyzer = {},
-        roslyn = {},
+        roslyn        = {},
         -- gleam = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -812,9 +787,19 @@ require('lazy').setup {
       require('mason-lspconfig').setup {
         handlers = {
           setup_sever,
-        },
-      }
+
+        }, }
       require('neodev').setup {}
+      require('java').setup {
+        spring_boot_tools = {
+          enable = false,
+        },
+        -- Your custom jdtls settings goes here
+      }
+
+      require('lspconfig').jdtls.setup {
+        -- Your custom nvim-java configuration goes here
+      }
       require("roslyn").setup({
         handlers = {
           setup_sever,
@@ -828,6 +813,10 @@ require('lazy').setup {
         }),
         on_attach = function() end,
         settings = {
+          ["csharp|background_analysis"] = {
+            dotnet_compiler_diagnostics_scope = "fullSolution",
+            dotnet_analyzer_diagnostics_scope = "fullSolution"
+          },
           ["csharp|completion"] = {
             ["dotnet_provide_regex_completions"] = true,
             ["dotnet_show_completion_items_from_unimported_namespaces"] = true,
@@ -862,6 +851,7 @@ require('lazy').setup {
       })
       require('lspconfig').racket_langserver.setup {
         handlers = { setup_sever },
+        capabilities = capabilities,
       }
       require('lspconfig').gleam.setup { handlers = { setup_sever } }
       -- we use non mason version of ocamllsp to have more up to date version
