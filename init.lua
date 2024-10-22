@@ -171,8 +171,6 @@ vim.opt.tabstop = 4
 
 vim.opt.expandtab = true
 
-
-
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -289,7 +287,7 @@ require('lazy').setup {
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
       require('which-key').setup()
-      vim.keymap.set({ "n", "x" }, "s", "<Nop>")
+      vim.keymap.set({ 'n', 'x' }, 's', '<Nop>')
       -- Document existing key chains
       require('which-key').add {
         -- { 's',         group = '[S]urround' },
@@ -308,16 +306,16 @@ require('lazy').setup {
     'christoomey/vim-tmux-navigator',
   },
   {
-    "NeogitOrg/neogit",
+    'NeogitOrg/neogit',
     dependencies = {
-      "nvim-lua/plenary.nvim",  -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
+      'nvim-lua/plenary.nvim',  -- required
+      'sindrets/diffview.nvim', -- optional - Diff integration
 
       -- Only one of these is needed, not both.
-      "nvim-telescope/telescope.nvim", -- optional
-      "ibhagwan/fzf-lua",              -- optional
+      'nvim-telescope/telescope.nvim', -- optional
+      'ibhagwan/fzf-lua',              -- optional
     },
-    config = true
+    config = true,
   },
 
   -- NOTE: Plugins can specify dependencies.
@@ -438,39 +436,39 @@ require('lazy').setup {
     end,
   },
   {
-    "folke/trouble.nvim",
+    'folke/trouble.nvim',
     opts = {}, -- for default options, refer to the configuration section for custom setup.
-    cmd = "Trouble",
+    cmd = 'Trouble',
     keys = {
       {
-        "<leader>xx",
-        "<cmd>Trouble diagnostics toggle<cr>",
-        desc = "Diagnostics (Trouble)",
+        '<leader>xx',
+        '<cmd>Trouble diagnostics toggle<cr>',
+        desc = 'Diagnostics (Trouble)',
       },
       {
-        "<leader>xX",
-        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
-        desc = "Buffer Diagnostics (Trouble)",
+        '<leader>xX',
+        '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
+        desc = 'Buffer Diagnostics (Trouble)',
       },
       {
-        "<leader>cs",
-        "<cmd>Trouble symbols toggle focus=false<cr>",
-        desc = "Symbols (Trouble)",
+        '<leader>cs',
+        '<cmd>Trouble symbols toggle focus=false<cr>',
+        desc = 'Symbols (Trouble)',
       },
       {
-        "<leader>cl",
-        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
-        desc = "LSP Definitions / references / ... (Trouble)",
+        '<leader>cl',
+        '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
+        desc = 'LSP Definitions / references / ... (Trouble)',
       },
       {
-        "<leader>xL",
-        "<cmd>Trouble loclist toggle<cr>",
-        desc = "Location List (Trouble)",
+        '<leader>xL',
+        '<cmd>Trouble loclist toggle<cr>',
+        desc = 'Location List (Trouble)',
       },
       {
-        "<leader>xQ",
-        "<cmd>Trouble qflist toggle<cr>",
-        desc = "Quickfix List (Trouble)",
+        '<leader>xQ',
+        '<cmd>Trouble qflist toggle<cr>',
+        desc = 'Quickfix List (Trouble)',
       },
     },
   },
@@ -479,37 +477,37 @@ require('lazy').setup {
     tag = 'stable',
     config = function()
       require('crates').setup()
-      local crates = require("crates")
+      local crates = require 'crates'
       local opts = { silent = true }
 
-      vim.keymap.set("n", "<leader>ct", crates.toggle, opts)
-      vim.keymap.set("n", "<leader>cr", crates.reload, opts)
+      vim.keymap.set('n', '<leader>ct', crates.toggle, opts)
+      vim.keymap.set('n', '<leader>cr', crates.reload, opts)
 
-      vim.keymap.set("n", "<leader>cv", crates.show_versions_popup, opts)
-      vim.keymap.set("n", "<leader>cf", crates.show_features_popup, opts)
-      vim.keymap.set("n", "<leader>cd", crates.show_dependencies_popup, opts)
+      vim.keymap.set('n', '<leader>cv', crates.show_versions_popup, opts)
+      vim.keymap.set('n', '<leader>cf', crates.show_features_popup, opts)
+      vim.keymap.set('n', '<leader>cd', crates.show_dependencies_popup, opts)
 
-      vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
-      vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
-      vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
-      vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
-      vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
-      vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
+      vim.keymap.set('n', '<leader>cu', crates.update_crate, opts)
+      vim.keymap.set('v', '<leader>cu', crates.update_crates, opts)
+      vim.keymap.set('n', '<leader>ca', crates.update_all_crates, opts)
+      vim.keymap.set('n', '<leader>cU', crates.upgrade_crate, opts)
+      vim.keymap.set('v', '<leader>cU', crates.upgrade_crates, opts)
+      vim.keymap.set('n', '<leader>cA', crates.upgrade_all_crates, opts)
 
-      vim.keymap.set("n", "<leader>cx", crates.expand_plain_crate_to_inline_table, opts)
-      vim.keymap.set("n", "<leader>cX", crates.extract_crate_into_table, opts)
+      vim.keymap.set('n', '<leader>cx', crates.expand_plain_crate_to_inline_table, opts)
+      vim.keymap.set('n', '<leader>cX', crates.extract_crate_into_table, opts)
 
-      vim.keymap.set("n", "<leader>cH", crates.open_homepage, opts)
-      vim.keymap.set("n", "<leader>cR", crates.open_repository, opts)
-      vim.keymap.set("n", "<leader>cD", crates.open_documentation, opts)
-      vim.keymap.set("n", "<leader>cC", crates.open_crates_io, opts)
+      vim.keymap.set('n', '<leader>cH', crates.open_homepage, opts)
+      vim.keymap.set('n', '<leader>cR', crates.open_repository, opts)
+      vim.keymap.set('n', '<leader>cD', crates.open_documentation, opts)
+      vim.keymap.set('n', '<leader>cC', crates.open_crates_io, opts)
       local function show_documentation()
         local filetype = vim.bo.filetype
         if vim.tbl_contains({ 'vim', 'help' }, filetype) then
-          vim.cmd('h ' .. vim.fn.expand('<cword>'))
+          vim.cmd('h ' .. vim.fn.expand '<cword>')
         elseif vim.tbl_contains({ 'man' }, filetype) then
-          vim.cmd('Man ' .. vim.fn.expand('<cword>'))
-        elseif vim.fn.expand('%:t') == 'Cargo.toml' and require('crates').popup_available() then
+          vim.cmd('Man ' .. vim.fn.expand '<cword>')
+        elseif vim.fn.expand '%:t' == 'Cargo.toml' and require('crates').popup_available() then
           require('crates').show_popup()
         else
           vim.lsp.buf.hover()
@@ -533,15 +531,11 @@ require('lazy').setup {
           },
         },
       },
-      { "seblj/roslyn.nvim",
-        exe = vim.fs.joinpath(
-          vim.fn.stdpath("data") --[[@as string]],
-          "roslyn",
-          "Microsoft.CodeAnalysis.LanguageServer.dll"
-        ),
+      {
+        'seblj/roslyn.nvim',
+        exe = vim.fs.joinpath(vim.fn.stdpath 'data' --[[@as string]], 'roslyn', 'Microsoft.CodeAnalysis.LanguageServer.dll'),
         filewatching = true,
       },
-      "Hoffs/omnisharp-extended-lsp.nvim",
       'nvim-java/nvim-java',
       -- {
       --   "iabdelkareem/csharp.nvim",
@@ -716,11 +710,12 @@ require('lazy').setup {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        clangd        = {},
+        clangd = {},
         -- gopls = {},
         -- pyright = {},
         rust_analyzer = {},
-        roslyn        = {},
+        roslyn = {},
+        matlab_ls = {},
         -- gleam = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -728,28 +723,13 @@ require('lazy').setup {
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        tsserver      = {},
-        --
-        jdtls         = {},
-        -- csharp_ls     = {},
-        lua_ls        = {
+        ts_ls = {},
+        lua_ls = {
           -- cmd = {...},
           -- filetypes { ...},
           -- capabilities = {},
           settings = {
             Lua = {
-              runtime = { version = 'LuaJIT' },
-              workspace = {
-                checkThirdParty = false,
-                -- Tells lua_ls where to find all the Lua files that you have loaded
-                -- for your neovim configuration.
-                library = {
-                  '${3rd}/luv/library',
-                  unpack(vim.api.nvim_get_runtime_file('', true)),
-                },
-                -- If lua_ls is really slow on your computer, you can try this instead:
-                -- library = { vim.env.VIMRUNTIME },
-              },
               completion = {
                 callSnippet = 'Replace',
               },
@@ -787,24 +767,27 @@ require('lazy').setup {
       require('mason-lspconfig').setup {
         handlers = {
           setup_sever,
-
-        }, }
+        },
+      }
       require('neodev').setup {}
       require('java').setup {
-        spring_boot_tools = {
-          enable = false,
+        jdk = {
+          -- install jdk using mason.nvim
+          auto_install = false,
         },
         -- Your custom jdtls settings goes here
       }
 
       require('lspconfig').jdtls.setup {
+        handlers = { setup_sever },
+        capabilities = capabilities,
         -- Your custom nvim-java configuration goes here
       }
-      require("roslyn").setup({
+      require('roslyn').setup {
         handlers = {
           setup_sever,
         },
-        capabilities = vim.tbl_deep_extend("force", capabilities or {}, {
+        capabilities = vim.tbl_deep_extend('force', capabilities or {}, {
           textDocument = {
             diagnostic = {
               dynamicRegistration = true,
@@ -813,42 +796,41 @@ require('lazy').setup {
         }),
         on_attach = function() end,
         settings = {
-          ["csharp|background_analysis"] = {
-            dotnet_compiler_diagnostics_scope = "fullSolution",
-            dotnet_analyzer_diagnostics_scope = "fullSolution"
+          ['csharp|background_analysis'] = {
+            dotnet_compiler_diagnostics_scope = 'fullSolution',
+            dotnet_analyzer_diagnostics_scope = 'fullSolution',
           },
-          ["csharp|completion"] = {
-            ["dotnet_provide_regex_completions"] = true,
-            ["dotnet_show_completion_items_from_unimported_namespaces"] = true,
-            ["dotnet_show_name_completion_suggestions"] = true,
+          ['csharp|completion'] = {
+            ['dotnet_provide_regex_completions'] = true,
+            ['dotnet_show_completion_items_from_unimported_namespaces'] = true,
+            ['dotnet_show_name_completion_suggestions'] = true,
           },
-          ["csharp|highlighting"] = {
-            ["dotnet_highlight_related_json_components"] = true,
-            ["dotnet_highlight_related_regex_components"] = true,
+          ['csharp|highlighting'] = {
+            ['dotnet_highlight_related_json_components'] = true,
+            ['dotnet_highlight_related_regex_components'] = true,
           },
-          ["csharp|code_lens"] = {
-            ["dotnet_enable_references_code_lens"] = true,
+          ['csharp|code_lens'] = {
+            ['dotnet_enable_references_code_lens'] = true,
           },
-          ["csharp|inlay_hints"] = {
-            ["csharp_enable_inlay_hints_for_implicit_object_creation"] = true,
-            ["csharp_enable_inlay_hints_for_implicit_variable_types"] = true,
-            ["csharp_enable_inlay_hints_for_lambda_parameter_types"] = true,
-            ["csharp_enable_inlay_hints_for_types"] = true,
-            ["dotnet_enable_inlay_hints_for_indexer_parameters"] = true,
-            ["dotnet_enable_inlay_hints_for_literal_parameters"] = true,
-            ["dotnet_enable_inlay_hints_for_object_creation_parameters"] = true,
-            ["dotnet_enable_inlay_hints_for_other_parameters"] = true,
-            ["dotnet_enable_inlay_hints_for_parameters"] = true,
-            ["dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix"] = true,
-            ["dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name"] = true,
-            ["dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent"] = true,
+          ['csharp|inlay_hints'] = {
+            ['csharp_enable_inlay_hints_for_implicit_object_creation'] = true,
+            ['csharp_enable_inlay_hints_for_implicit_variable_types'] = true,
+            ['csharp_enable_inlay_hints_for_lambda_parameter_types'] = true,
+            ['csharp_enable_inlay_hints_for_types'] = true,
+            ['dotnet_enable_inlay_hints_for_indexer_parameters'] = true,
+            ['dotnet_enable_inlay_hints_for_literal_parameters'] = true,
+            ['dotnet_enable_inlay_hints_for_object_creation_parameters'] = true,
+            ['dotnet_enable_inlay_hints_for_other_parameters'] = true,
+            ['dotnet_enable_inlay_hints_for_parameters'] = true,
+            ['dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix'] = true,
+            ['dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name'] = true,
+            ['dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent'] = true,
           },
-          ["navigation"] = {
-            ["dotnet_navigate_to_decompiled_sources"] = true,
+          ['navigation'] = {
+            ['dotnet_navigate_to_decompiled_sources'] = true,
           },
         },
-
-      })
+      }
       require('lspconfig').racket_langserver.setup {
         handlers = { setup_sever },
         capabilities = capabilities,
@@ -1059,26 +1041,43 @@ require('lazy').setup {
     build = ':TSUpdate',
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-      local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
       parser_config.shank = {
         install_info = {
-          url = "https://github.com/mendelsshop/tree-sitter-shank.git", -- local path or git repo
-          files = { "src/parser.c", "src/scanner.c" },                  -- note that some parsers also require src/scanner.c or src/scanner.cc
+          url = 'https://github.com/mendelsshop/tree-sitter-shank.git', -- local path or git repo
+          files = { 'src/parser.c', 'src/scanner.c' },                  -- note that some parsers also require src/scanner.c or src/scanner.cc
           -- optional entries:
-          branch = "main",                                              -- default branch in case of git repo if different from master
+          branch = 'main',                                              -- default branch in case of git repo if different from master
           generate_requires_npm = false,                                -- if stand-alone parser without npm dependencies
           requires_generate_from_grammar = false,                       -- if folder contains pre-generated src/parser.c
         },
-        filetype = "shank",                                             -- if filetype does not match the parser name
+        filetype = 'shank',                                             -- if filetype does not match the parser name
       }
-      vim.filetype.add({
+      vim.filetype.add {
         extension = {
-          shank = "shank"
-        }
-      })
+          shank = 'shank',
+        },
+      }
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'shank', 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'java', 'ocaml', 'scheme', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+        ensure_installed = {
+          'shank',
+          'c',
+          'cpp',
+          'go',
+          'lua',
+          'python',
+          'rust',
+          'java',
+          'ocaml',
+          'scheme',
+          'tsx',
+          'javascript',
+          'typescript',
+          'vimdoc',
+          'vim',
+          'bash',
+        },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = { enable = true },
