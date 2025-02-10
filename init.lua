@@ -526,7 +526,7 @@ require('lazy').setup {
         opts = {
           registries = {
             'github:nvim-java/mason-registry',
-            'github:syndim/mason-registry',
+            'github:Crashdummyy/mason-registry',
             'github:mason-org/mason-registry',
           },
         },
@@ -537,24 +537,9 @@ require('lazy').setup {
         filewatching = true,
       },
       'nvim-java/nvim-java',
-      -- {
-      --   "iabdelkareem/csharp.nvim",
-      --   dependencies = {
-      --     "williamboman/mason.nvim", -- Required, automatically installs omnisharp
-      --     "mfussenegger/nvim-dap",
-      --     "Tastyep/structlog.nvim",  -- Optional, but highly recommended for debugging
-      --   },
-      --   config = function()
-      --     require("mason").setup() -- Mason setup must run before csharp
-      --     require("csharp").setup()
-      --   end
-      -- },
       'folke/neodev.nvim',
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
-      -- {
-      --   "gleam-lang/gleam.vim",
-      -- },
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim', opts = {} },
@@ -711,18 +696,18 @@ require('lazy').setup {
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {},
-        -- gopls = {},
-        -- pyright = {},
         rust_analyzer = {},
         roslyn = {},
         matlab_ls = {},
-        -- gleam = {},
+        html = {},
+        cssls = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
+
         ts_ls = {},
         lua_ls = {
           -- cmd = {...},
@@ -833,6 +818,10 @@ require('lazy').setup {
       }
       require('lspconfig').racket_langserver.setup {
         handlers = { setup_sever },
+        cmd =(vim.uv.os_uname().sysname == 'Linux' and vim.uv.os_environ()['DISPLAY']) == nil and
+            { 'xvfb-run', '-a','racket', '--lib', 'racket-langserver' }
+            or
+            { 'racket', '--lib', 'racket-langserver' },
         capabilities = capabilities,
       }
       require('lspconfig').gleam.setup { handlers = { setup_sever } }
@@ -1185,6 +1174,5 @@ require('lazy').setup {
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
   -- { import = 'custom.plugins' },
 }
-
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
