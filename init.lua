@@ -592,10 +592,10 @@ require('lazy').setup {
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-T>.
           map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-          map('gsd',function ()
+          map('gsd', function()
             vim.cmd.vs()
             require('telescope.builtin').lsp_definitions()
-          end,  '[G]oto [D]efinition')
+          end, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -700,6 +700,7 @@ require('lazy').setup {
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {},
+        openscad_lsp = {},
         rust_analyzer = {},
         roslyn = {},
         matlab_ls = {},
@@ -822,8 +823,8 @@ require('lazy').setup {
       }
       require('lspconfig').racket_langserver.setup {
         handlers = { setup_sever },
-        cmd =(vim.uv.os_uname().sysname == 'Linux' and vim.uv.os_environ()['DISPLAY']) == nil and
-            { 'xvfb-run', '-a','racket', '--lib', 'racket-langserver' }
+        cmd = (vim.uv.os_uname().sysname == 'Linux' and vim.uv.os_environ()['DISPLAY']) == nil and
+            { 'xvfb-run', '-a', 'racket', '--lib', 'racket-langserver' }
             or
             { 'racket', '--lib', 'racket-langserver' },
         capabilities = capabilities,
@@ -1029,6 +1030,18 @@ require('lazy').setup {
     end,
   },
 
+  {
+    "mendelsshop/openscad.nvim",
+    config = function()
+      vim.g.openscad_load_snippets = true
+      vim.g.openscad_default_mappings = true
+      vim.g.openscad_cheatsheet_toggle_key = '<leader>ot'
+      vim.g.openscad_help_manual_trig_key = '<leader>od'
+      vim.g.openscad_exec_openscad_trig_key = '<leader>oo'
+      require("openscad")
+    end,
+    dependencies = { "L3MON4D3/LuaSnip", "junegunn/fzf.vim" },
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
