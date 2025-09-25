@@ -839,7 +839,15 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         openscad_lsp = {},
-        rust_analyzer = {},
+        rust_analyzer = {
+
+          -- settings = {
+          --   server = { path = '/home/mendel/.cargo/bin/rust-analyzer' },
+          --   trace = { server = 'messages' },
+          -- },
+          -- command = '/home/mendel/.cargo/bin/rust-analyzer',
+        },
+        -- ocamllsp = {},
         roslyn = {},
         matlab_ls = {},
         html = {},
@@ -894,14 +902,10 @@ require('lazy').setup({
         -- by the server configuration above. Useful when disabling
         -- certain features of an LSP (for example, turning off formatting for tsserver)
         server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        vim.lsp.config()
         require('lspconfig')[server_name].setup(server)
       end
 
-      require('mason-lspconfig').setup {
-        handlers = {
-          setup_sever,
-        },
-      }
       -- require('java').setup {
       --   jdk = {
       --     -- install jdk using mason.nvim
@@ -909,15 +913,26 @@ require('lazy').setup({
       --   },
       --   -- Your custom jdtls settings goes here
       -- }
-      require('lspconfig').jdtls.setup {
-        handlers = { setup_sever },
-        capabilities = capabilities,
-        -- Your custom nvim-java configuration goes here
-      }
-      require('roslyn').setup {
-        handlers = {
-          setup_sever,
+      -- vim.lsp.config('rust_analyzer', {
+      --   -- Server-specific settings. See `:help lsp-quickstart`
+      --   settings = {
+      --     ['rust-analyzer'] = {
+      --       -- trace = { server = 'verbose' },
+      --     },
+      --   },
+      --
+      -- cmd = { '/home/mendel/.cargo/bin/rust-analyzer' },
+
+      --   capabilities = capabilities,
+      -- })
+      vim.lsp.config('jdtls', {
+        {
+          -- handlers = { setup_sever },
+          capabilities = capabilities,
+          -- Your custom nvim-java configuration goes here
         },
+      })
+      vim.lsp.config('roslyn', {
         capabilities = vim.tbl_deep_extend('force', capabilities or {}, {
           textDocument = {
             diagnostic = {
@@ -961,38 +976,26 @@ require('lazy').setup({
             ['dotnet_navigate_to_decompiled_sources'] = true,
           },
         },
-      }
-      require('lspconfig').racket_langserver.setup {
-        handlers = { setup_sever },
+      })
+      vim.lsp.config('racket_langserver', {
         cmd = (vim.uv.os_uname().sysname == 'Linux' and vim.uv.os_environ()['DISPLAY']) == nil and { 'xvfb-run', '-a', 'racket', '--lib', 'racket-langserver' }
           or { 'racket', '--lib', 'racket-langserver' },
         capabilities = capabilities,
-      }
-      require('lspconfig').gleam.setup { handlers = { setup_sever } }
-      -- we use non mason version of ocamllsp to have more up to date version
-      -- and use system version of ocamllsp
-      require('lspconfig').ocamllsp.setup {
-        capabilities = capabilities,
-        handlers = { setup_sever },
+      })
+      vim.lsp.config('ocamllsp', {
         settings = {
           codelens = { enable = true },
           inlay_hints = { enable = true },
         },
-      }
+      })
+
+      vim.lsp.enable { 'ocamllsp', 'racket_langserver', 'jdtls' }
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-        automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        automatic_enable = vim.tbl_keys(servers or {}),
       }
+      for server_name, config in pairs(servers) do
+        vim.lsp.config(server_name, config)
+      end
     end,
   },
 
@@ -1115,7 +1118,7 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
 
       sources = {
@@ -1372,7 +1375,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -1408,4 +1411,3 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
-
