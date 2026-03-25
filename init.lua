@@ -841,10 +841,13 @@ require('lazy').setup({
         openscad_lsp = {},
         rust_analyzer = {
 
-          -- settings = {
-          --   server = { path = '/home/mendel/.cargo/bin/rust-analyzer' },
-          --   trace = { server = 'messages' },
-          -- },
+          settings = {
+            ['rust-analyzer'] = {
+              rustc = { source = 'discover' },
+            },
+            --   server = { path = '/home/mendel/.cargo/bin/rust-analyzer' },
+            --   trace = { server = 'messages' },
+          },
           -- command = '/home/mendel/.cargo/bin/rust-analyzer',
         },
         -- ocamllsp = {},
@@ -913,18 +916,19 @@ require('lazy').setup({
       --   },
       --   -- Your custom jdtls settings goes here
       -- }
-      -- vim.lsp.config('rust_analyzer', {
-      --   -- Server-specific settings. See `:help lsp-quickstart`
-      --   settings = {
-      --     ['rust-analyzer'] = {
-      --       -- trace = { server = 'verbose' },
-      --     },
-      --   },
-      --
-      -- cmd = { '/home/mendel/.cargo/bin/rust-analyzer' },
+      vim.lsp.config('rust_analyzer', {
+        -- Server-specific settings. See `:help lsp-quickstart`
+        settings = {
+          ['rust-analyzer'] = {
+            rustc = { source = 'discover ' },
+            -- trace = { server = 'verbose' },
+          },
+        },
 
-      --   capabilities = capabilities,
-      -- })
+        -- cmd = { '/home/mendel/.cargo/bin/rust-analyzer' },
+
+        capabilities = capabilities,
+      })
       vim.lsp.config('jdtls', {
         {
           -- handlers = { setup_sever },
