@@ -210,34 +210,34 @@ vim.diagnostic.config {
   jump = { float = true },
 }
 
-      -- Diagnostic Config
-      -- See :help vim.diagnostic.Opts
-      vim.diagnostic.config {
-        severity_sort = true,
-        float = { border = 'rounded', source = 'if_many' },
-        underline = { severity = vim.diagnostic.severity.ERROR },
-        signs = vim.g.have_nerd_font and {
-          text = {
-            [vim.diagnostic.severity.ERROR] = '󰅚 ',
-            [vim.diagnostic.severity.WARN] = '󰀪 ',
-            [vim.diagnostic.severity.INFO] = '󰋽 ',
-            [vim.diagnostic.severity.HINT] = '󰌶 ',
-          },
-        } or {},
-        virtual_text = {
-          source = 'if_many',
-          spacing = 2,
-          format = function(diagnostic)
-            local diagnostic_message = {
-              [vim.diagnostic.severity.ERROR] = diagnostic.message,
-              [vim.diagnostic.severity.WARN] = diagnostic.message,
-              [vim.diagnostic.severity.INFO] = diagnostic.message,
-              [vim.diagnostic.severity.HINT] = diagnostic.message,
-            }
-            return diagnostic_message[diagnostic.severity]
-          end,
-        },
+-- Diagnostic Config
+-- See :help vim.diagnostic.Opts
+vim.diagnostic.config {
+  severity_sort = true,
+  float = { border = 'rounded', source = 'if_many' },
+  underline = { severity = vim.diagnostic.severity.ERROR },
+  signs = vim.g.have_nerd_font and {
+    text = {
+      [vim.diagnostic.severity.ERROR] = '󰅚 ',
+      [vim.diagnostic.severity.WARN] = '󰀪 ',
+      [vim.diagnostic.severity.INFO] = '󰋽 ',
+      [vim.diagnostic.severity.HINT] = '󰌶 ',
+    },
+  } or {},
+  virtual_text = {
+    source = 'if_many',
+    spacing = 2,
+    format = function(diagnostic)
+      local diagnostic_message = {
+        [vim.diagnostic.severity.ERROR] = diagnostic.message,
+        [vim.diagnostic.severity.WARN] = diagnostic.message,
+        [vim.diagnostic.severity.INFO] = diagnostic.message,
+        [vim.diagnostic.severity.HINT] = diagnostic.message,
       }
+      return diagnostic_message[diagnostic.severity]
+    end,
+  },
+}
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
@@ -668,6 +668,7 @@ require('lazy').setup({
           },
         },
       },
+      'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       {
         'seblj/roslyn.nvim',
@@ -791,17 +792,13 @@ require('lazy').setup({
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client:supports_method('textDocument/inlayHint', event.buf) then
-            vim.lsp.inlay_hint.enable(true)
-          end
+          if client and client:supports_method('textDocument/inlayHint', event.buf) then vim.lsp.inlay_hint.enable(true) end
           -- code lens
           if client and client:supports_method('textDocument/codeLens', event.buf) then
             local codelens = vim.api.nvim_create_augroup('LSPCodeLens', { clear = true })
             vim.api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave', 'CursorHold' }, {
               group = codelens,
-              callback = function()
-                vim.lsp.codelens.refresh()
-              end,
+              callback = function() vim.lsp.codelens.refresh() end,
               buffer = bufnr,
             })
           end
@@ -1196,7 +1193,7 @@ require('lazy').setup({
   { -- Collection of various small independent plugins/modules
     'nvim-mini/mini.nvim',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
+      -- 'nvim-treesitter/nvim-treesitter-textobjects',
     },
     config = function()
       -- Better Around/Inside textobjects
@@ -1260,7 +1257,7 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+      local parser_config = require('nvim-treesitter.parsers')
       parser_config.shank = {
         install_info = {
           url = 'https://github.com/mendelsshop/tree-sitter-shank.git', -- local path or git repo
@@ -1278,27 +1275,32 @@ require('lazy').setup({
           shank = 'shank',
         },
       }
-local parsers = {
-          'shank',
-          'c',
-          'cpp',
-          'go',
-          'lua',
-          'python',
-          'rust',
-          'java',
-          'ocaml',
-          'scheme',
-          'tsx',
-          'javascript',
-          'typescript',
-          'vimdoc',
-          'vim',
-          'bash',
-          'c_sharp',
-          'diff',
-          'html', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vimdoc'
-        }
+      local parsers = {
+        'shank',
+        'c',
+        'cpp',
+        'go',
+        'lua',
+        'python',
+        'rust',
+        'java',
+        'ocaml',
+        'scheme',
+        'tsx',
+        'javascript',
+        'typescript',
+        'vimdoc',
+        'vim',
+        'bash',
+        'c_sharp',
+        'diff',
+        'html',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vimdoc',
+      }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
@@ -1334,50 +1336,50 @@ local parsers = {
       --       node_decremental = '<M-space>',
       --     },
       --   },
-        -- textobjects = {
-        --   select = {
-        --     enable = true,
-        --     lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-        --     keymaps = {
-        --       -- You can use the capture groups defined in textobjects.scm
-        --       ['aa'] = '@parameter.outer',
-        --       ['ia'] = '@parameter.inner',
-        --       ['aF'] = '@function.outer',
-        --       ['iF'] = '@function.inner',
-        --       ['ac'] = '@class.outer',
-        --       ['ic'] = '@class.inner',
-        --     },
-        --   },
-        --   move = {
-        --     enable = true,
-        --     set_jumps = true, -- whether to set jumps in the jumplist
-        --     goto_next_start = {
-        --       [']m'] = '@function.outer',
-        --       [']]'] = '@class.outer',
-        --     },
-        --     goto_next_end = {
-        --       [']M'] = '@function.outer',
-        --       [']['] = '@class.outer',
-        --     },
-        --     goto_previous_start = {
-        --       ['[['] = '@class.outer',
-        --       ['[m'] = '@function.outer',
-        --     },
-        --     goto_previous_end = {
-        --       ['[M'] = '@function.outer',
-        --       ['[]'] = '@class.outer',
-        --     },
-        --   },
-        --   swap = {
-        --     enable = true,
-        --     swap_next = {
-        --       ['<leader>a'] = '@parameter.inner',
-        --     },
-        --     swap_previous = {
-        --       ['<leader>A'] = '@parameter.inner',
-        --     },
-        --   },
-        -- },
+      -- textobjects = {
+      --   select = {
+      --     enable = true,
+      --     lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+      --     keymaps = {
+      --       -- You can use the capture groups defined in textobjects.scm
+      --       ['aa'] = '@parameter.outer',
+      --       ['ia'] = '@parameter.inner',
+      --       ['aF'] = '@function.outer',
+      --       ['iF'] = '@function.inner',
+      --       ['ac'] = '@class.outer',
+      --       ['ic'] = '@class.inner',
+      --     },
+      --   },
+      --   move = {
+      --     enable = true,
+      --     set_jumps = true, -- whether to set jumps in the jumplist
+      --     goto_next_start = {
+      --       [']m'] = '@function.outer',
+      --       [']]'] = '@class.outer',
+      --     },
+      --     goto_next_end = {
+      --       [']M'] = '@function.outer',
+      --       [']['] = '@class.outer',
+      --     },
+      --     goto_previous_start = {
+      --       ['[['] = '@class.outer',
+      --       ['[m'] = '@function.outer',
+      --     },
+      --     goto_previous_end = {
+      --       ['[M'] = '@function.outer',
+      --       ['[]'] = '@class.outer',
+      --     },
+      --   },
+      --   swap = {
+      --     enable = true,
+      --     swap_next = {
+      --       ['<leader>a'] = '@parameter.inner',
+      --     },
+      --     swap_previous = {
+      --       ['<leader>A'] = '@parameter.inner',
+      --     },
+      --   },
+      -- },
       -- }
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -1388,14 +1390,10 @@ local parsers = {
     end,
   },
   vim.keymap.set('n', '-', function()
-    vim.ui.input({ prompt = 'File:', completion = 'file_in_path' }, function(file)
-      vim.cmd.split(file)
-    end)
+    vim.ui.input({ prompt = 'File:', completion = 'file_in_path' }, function(file) vim.cmd.split(file) end)
   end, { noremap = true, silent = true }),
   vim.keymap.set('n', '|', function()
-    vim.ui.input({ prompt = 'File:', completion = 'file_in_path' }, function(file)
-      vim.cmd.vs(file)
-    end)
+    vim.ui.input({ prompt = 'File:', completion = 'file_in_path' }, function(file) vim.cmd.vs(file) end)
   end, { noremap = true, silent = true }),
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
