@@ -89,7 +89,6 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-
 vim.keymap.set('n', '<Enter>', '<C-d>zz', { noremap = true })
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -209,7 +208,26 @@ vim.diagnostic.config {
   -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
   jump = { float = true },
 }
-
+vim.filetype.add {
+  extension = {
+    shank = 'shank',
+  },
+}
+vim.api.nvim_create_autocmd('User', {
+  pattern = 'TSUpdate',
+  callback = function()
+    require('nvim-treesitter.parsers').shank = {
+      install_info = {
+        url = 'https://github.com/mendelsshop/tree-sitter-shank.git', -- local path or git repo
+        files = { 'src/parser.c', 'src/scanner.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
+        -- optional entries:
+        branch = 'main', -- default branch in case of git repo if different from master
+        generate_requires_npm = false, -- if stand-alone parser without npm dependencies
+        requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
+      },
+    }
+  end,
+})
 -- Diagnostic Config
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
@@ -759,7 +777,7 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
-          map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+          map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
@@ -1257,24 +1275,7 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
     config = function()
       -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-      local parser_config = require('nvim-treesitter.parsers')
-      parser_config.shank = {
-        install_info = {
-          url = 'https://github.com/mendelsshop/tree-sitter-shank.git', -- local path or git repo
-          files = { 'src/parser.c', 'src/scanner.c' }, -- note that some parsers also require src/scanner.c or src/scanner.cc
-          -- optional entries:
-          branch = 'main', -- default branch in case of git repo if different from master
-          generate_requires_npm = false, -- if stand-alone parser without npm dependencies
-          requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
-        },
-        filetype = 'shank', -- if filetype does not match the parser name
-      }
 
-      vim.filetype.add {
-        extension = {
-          shank = 'shank',
-        },
-      }
       local parsers = {
         'shank',
         'c',
